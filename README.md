@@ -4,4 +4,4 @@
 - MUST READ: **[Submission requirements](SUBMISSION_REQUIREMENTS.md)**
 - [Entry form template](ENTRYFORM.md)
   
-### ⟹ [Insert your documentation here](ENTRYFORM.md) <<
+### ⟹ [Insert your documentation here](ENTRYFORM.md)  <<
