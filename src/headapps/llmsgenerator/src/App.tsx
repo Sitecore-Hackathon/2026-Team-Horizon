@@ -132,8 +132,20 @@ export default function App() {
         return [];
       }
 
+      // Get the selected site to get the root path
+      const selectedSite = sites.find(s => s.id === siteId);
+      const rootPath = selectedSite?.hosts?.[0]?.properties?.rootPath || '';
+      
+      if (!rootPath) {
+        console.error("Root path not found for selected site");
+        return [];
+      }
+
+      console.log("Filtering pages by root path:", rootPath);
+
       // GraphQL query to search using sitecore_master_index
       // Search for items with "isLLMPage" field set to "1"
+      // We'll filter by path after getting results since path matching in search can be tricky
       const graphqlQuery = `
         query GetLLMPages {
           search(
@@ -179,13 +191,22 @@ export default function App() {
       const searchResults = (response.data as any)?.data?.search?.results || [];
       
       // Extract the innerItem from each result
-      const llmPages = searchResults.map((result: any) => result.innerItem).filter((item: any) => item);
+      const allLlmPages = searchResults.map((result: any) => result.innerItem).filter((item: any) => item);
       
-      console.log(`Found ${llmPages.length} pages with LLM checkbox enabled:`, llmPages);
+      console.log(`Found ${allLlmPages.length} total pages with LLM checkbox enabled:`, allLlmPages);
       
-      // Get the selected site to construct URLs
-      const selectedSite = sites.find(s => s.id === siteId);
-      const siteName = selectedSite?.name || '';
+      // Filter by root path to only get pages from the selected site
+      const llmPages = allLlmPages.filter((item: any) => {
+        const itemPath = (item.path || '').toLowerCase();
+        const siteRoot = rootPath.toLowerCase();
+        const isInSite = itemPath.startsWith(siteRoot);
+        if (isInSite) {
+          console.log(`  ✓ Including: ${item.path}`);
+        }
+        return isInSite;
+      });
+      
+      console.log(`Filtered to ${llmPages.length} pages for site with root path ${rootPath}`);
       
       // Debug: Log the selected site object
       console.log("Selected site for URL construction:", selectedSite);
@@ -201,8 +222,7 @@ export default function App() {
       
       console.log("Target hostname:", targetHostname);
       
-      // Get the root path and start item from hosts[0].properties
-      const rootPath = selectedSite?.hosts?.[0]?.properties?.rootPath || `/sitecore/content/${siteName}`;
+      // Get the start item from hosts[0].properties (rootPath already obtained above)
       const startItem = selectedSite?.hosts?.[0]?.properties?.startItem || '';
       console.log("Root path to strip:", rootPath);
       console.log("Start item:", startItem);
