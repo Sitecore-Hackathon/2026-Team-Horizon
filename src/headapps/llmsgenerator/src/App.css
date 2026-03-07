@@ -1,0 +1,263 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.app {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.info-section {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.current-site {
+  background-color: rgba(100, 108, 255, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(100, 108, 255, 0.3);
+}
+
+.widget-content {
+  text-align: left;
+}
+
+.widget-content h2 {
+  font-size: 1.5em;
+  margin-bottom: 1rem;
+  color: #646cff;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.site-dropdown {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  font-family: inherit;
+}
+
+.site-dropdown:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.confirm-button {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background-color: #646cff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.confirm-button:hover:not(:disabled) {
+  background-color: #535bf2;
+  border-color: transparent;
+}
+
+.message {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.message.success {
+  background-color: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.5);
+  color: #22c55e;
+}
+
+.message.error {
+  background-color: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #ef4444;
+}
+
+.sites-list {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sites-list h3 {
+  font-size: 1.2em;
+  margin-bottom: 1rem;
+  color: #888;
+}
+
+.sites-list ul {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+}
+
+.sites-list li {
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.site-id {
+  color: #888;
+  font-size: 0.9em;
+  margin-left: 0.5rem;
+}
+
+.content-display {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.content-header h3 {
+  font-size: 1.2em;
+  margin: 0;
+  color: #646cff;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.copy-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  background-color: rgba(100, 108, 255, 0.2);
+  border: 1px solid rgba(100, 108, 255, 0.5);
+  color: #646cff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.copy-button:hover {
+  background-color: rgba(100, 108, 255, 0.3);
+  border-color: #646cff;
+}
+
+.upload-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  background-color: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.5);
+  color: #22c55e;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.upload-button:hover:not(:disabled) {
+  background-color: rgba(34, 197, 94, 0.3);
+  border-color: #22c55e;
+}
+
+.upload-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background-color: rgba(100, 100, 100, 0.1);
+  border-color: rgba(100, 100, 100, 0.3);
+  color: #888;
+}
+
+.info-message {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background-color: rgba(100, 108, 255, 0.1);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  border-radius: 6px;
+  color: #646cff;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.content-textarea {
+  width: 100%;
+  padding: 1rem;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9rem;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: inherit;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.content-textarea:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+@media (prefers-color-scheme: light) {
+  .info-section {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .current-site {
+    background-color: rgba(100, 108, 255, 0.1);
+    border-color: rgba(100, 108, 255, 0.3);
+  }
+
+  .site-dropdown {
+    border-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  .confirm-button {
+    background-color: #646cff;
+    color: white;
+  }
+
+  .sites-list li {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .content-display {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .content-textarea {
+    background-color: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+}

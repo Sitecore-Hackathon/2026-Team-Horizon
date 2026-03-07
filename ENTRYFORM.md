@@ -22,6 +22,7 @@ Our Marketplace widget:
 - Automatically discovers all sites in your SitecoreAI environment via the SitecoreAI API
 - Generates properly formatted llms.txt content with site metadata
 - Provides one-click copy-to-clipboard functionality for easy deployment
+- Supports direct upload to Sitecore Media Library (when deployed)
 - Requires zero additional infrastructure - runs entirely within the Sitecore Marketplace framework
 
 ## Video link
@@ -102,8 +103,10 @@ No additional configuration required! The widget uses built-in Marketplace authe
 1. **View Current Site** - The widget displays your current site context at the top
 2. **Select a Site** - Use the dropdown to select any site in your environment
 3. **Generate Content** - Click the "Generate llms.txt" button
-4. **Copy Content** - Use the "📋 Copy to Clipboard" button to copy the generated content
-5. **Deploy** - Save the content as `llms.txt` in your site's root directory
+4. **Copy or Upload**:
+   - **📋 Copy to Clipboard**: Copy the generated content and manually upload
+   - **☁️ Upload to Media Library**: Directly upload to Sitecore Media Library at `/sitecore/media library/Project/rp-poc/{site-name}/llms.txt` (works when app is deployed to Sitecore; may be blocked by CORS in local development)
+5. **Deploy** (if using clipboard): Save the content as `llms.txt` in your site's root directory
 
 ### Generated Content Structure
 
@@ -115,11 +118,16 @@ The generated llms.txt file includes:
 
 ### Widget Features
 
-- **Site Discovery**: Automatically lists all sites in your SitecoreAI environment
-- **Context Awareness**: Pre-selects the current dashboard site
-- **Live Preview**: View generated content before copying
-- **Copy to Clipboard**: One-click copying within the Sitecore iframe context
+- **Site Discovery**: Automatically lists all sites in your SitecoreAI environment using SitecoreAI Sites REST API
+- **Context Awareness**: Pre-selects the current dashboard site from application context
+- **Live Preview**: View generated content in an editable textarea before copying or uploading
+- **Copy to Clipboard**: One-click copying that works within the Sitecore iframe security context
+- **Media Library Upload**: Direct upload to Sitecore Media Library using GraphQL uploadMedia mutation
+  - Uses two-step process: get presigned URL via GraphQL, then POST file to URL
+  - Automatically organizes files by site: `/sitecore/media library/Project/rp-poc/{site-name}/llms.txt`
+  - Works when deployed; may encounter CORS restrictions in local development
 - **Site Counter**: Shows total number of available sites
+- **Status Messages**: Clear feedback for success/error states
 
 ### Developer Console Logs
 
@@ -137,15 +145,32 @@ Open browser Developer Tools (F12) → Console to view detailed logs.
 This project demonstrates the power of the Sitecore Marketplace SDK for creating native dashboard extensions. The widget uses modern React development with TypeScript and integrates seamlessly with SitecoreAI APIs.
 
 **Technical Highlights:**
-- Built with React 19 and TypeScript 5
-- Uses Vite for blazing-fast development
-- Implements Sitecore Marketplace SDK client and XMC modules
-- Follows Sitecore API best practices
-- Works within iframe security constraints
+- Built with React 19.2.4 and TypeScript 5.9.3
+- Uses Vite 7.3.1 for blazing-fast development
+- Implements Sitecore Marketplace SDK:
+  - `@sitecore-marketplace-sdk/client` for SDK core functionality
+  - `@sitecore-marketplace-sdk/xmc` for SitecoreAI API access
+- Integrates with multiple SitecoreAI APIs:
+  - **Application Context API**: Retrieves app and environment context
+  - **Site Context API**: Gets current site information
+  - **Sites REST API**: Lists all sites in the environment
+  - **Authoring GraphQL API**: Executes uploadMedia mutation for file uploads
+- Follows Sitecore API best practices:
+  - Uses SDK mutation operations (`xmc.authoring.graphql`) to avoid CORS issues
+  - Implements proper error handling and user feedback
+  - Respects iframe security constraints
+- Custom React hook (`useMarketplaceClient`) for SDK initialization with XMC module
 
 **Future Enhancements:**
-- Auto-crawl site content structure
-- Include page hierarchy in llms.txt
-- Support custom llms.txt templates
-- Direct deployment to site root
+- Auto-crawl site content structure from Sitecore items
+- Include page hierarchy and navigation in llms.txt
+- Support custom llms.txt templates with user-defined sections
+- Batch processing for multiple sites
+- Schedule automated llms.txt regeneration
+- Integration with Sitecore Publishing Service to deploy to delivery edge
+
+**Known Limitations:**
+- Media Library upload requires the app to be deployed within Sitecore environment
+- Local development upload may be blocked by browser CORS policy (use "Copy to Clipboard" for local testing)
+- Generated files currently use static template; content crawling planned for future release
 - Multi-language site support
