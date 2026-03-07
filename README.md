@@ -1,148 +1,212 @@
-# SitecoreAI llms.txt Generator - Marketplace Widget
+﻿
+![Hackathon Logo](docs/images/hackathon.png?raw=true "Hackathon Logo")
+# Sitecore Hackathon 2026 - Team Horizon
+![Team Horizon Logo](docs/images/sitecore-hackathon-2026-TeamHorizon.png)
 
-A Sitecore Marketplace dashboard widget app that generates llms.txt files for SitecoreAI sites.
 
-## 🎯 Overview
+## Category
+**Best Marketplace App for Sitecore AI**
 
-This Marketplace app appears as a dashboard widget in SitecoreAI. It allows users to:
-- View all sites in their SitecoreAI environment
-- Select a site from a dropdown
-- Generate an llms.txt file for the selected site
-- Copy the generated content to clipboard
-- Upload directly to Sitecore Media Library (when deployed)
+## Description
+The main goal of our submission is to revolutionize how Sitecore websites prepare for AI interactions (optional integration) through our innovative Marketplace App that automatically generates **LLMS.txt** files. 
 
-## 🏗️ Architecture
+**What is LLMS.txt?**  
+LLMS.txt is a standardized markdown file that helps Large Language Models (LLMs) understand your website's content quickly and accurately. Think of it as a comprehensive guide for AI-a single file that contains all the essential information from your site in a format that AI agents can easily digest. This enables AI assistants like ChatGPT, Claude, and others to provide accurate, context-aware responses about your content without having to crawl your entire website.
 
-**Referenced Documentation:**
-- [Sitecore Marketplace SDK - Quick Start (Manual)](https://doc.sitecore.com/mp/en/developers/sdk/latest/sitecore-marketplace-sdk/quick-start--manual-.html)
-- [Initialize the xmc package](https://doc.sitecore.com/mp/en/developers/sdk/latest/sitecore-marketplace-sdk/initialize-the-xmc-package.html)
-- [Dashboard Widget Extension Point](https://doc.sitecore.com/mp/en/developers/marketplace/extension-points.html#sitecoreai)
-- [Make a GraphQL Query](https://doc.sitecore.com/mp/en/developers/sdk/latest/sitecore-marketplace-sdk/make-a-graphql-query.html)
-- [Query the Site Context](https://doc.sitecore.com/mp/en/developers/sdk/latest/sitecore-marketplace-sdk/query-the-site-context.html)
+Our Sitecore Marketplace app makes creating LLMS.txt effortless. Here's how it transforms your content workflow:
 
-### Extension Point
-- **Dashboard Widget** - Appears in the SitecoreAI site dashboard
+**The Smart Way to Build LLMS.txt:**  
+Our app intelligently reads all pages tagged as "LLMS pages" within your Sitecore instance (based on configurable Sitecore Templates). It then automatically extracts each page's title and content, organizing them into a ready-to-use LLMS.txt file that follows industry best practices. No manual copying, no formatting headaches-just seamless automation that saves you hours of work.
 
-### SDK Packages Used
-- `@sitecore-marketplace-sdk/client` (latest) - Required for all Marketplace apps
-- `@sitecore-marketplace-sdk/xmc` (latest) - For XM Cloud API access
+**By Integrating with AI Agents for Optimized LLMS.txt:**  
+This is where the magic happens. While our app generates a comprehensive LLMS.txt file, integrating with AI Agents takes it to the next level:
 
-### APIs Used
+- **Intelligent Content Summarization:** Agents can analyze your page content and create concise, meaningful summaries rather than dumping entire pages, making the LLMS.txt file more efficient and faster for AI models to process.
+
+- **Smart Prioritization:** AI Agents can identify and highlight the most important information from each page, ensuring critical content gets prominent placement in your LLMS.txt file.
+
+- **Automatic SEO Optimization:** Agents can enhance your content with relevant keywords and structure it in a way that improves discoverability by AI search engines and assistants.
+
+- **Context-Aware Formatting:** Instead of generic content extraction, Agents understand the relationships between your pages and can create logical groupings, hierarchies, and cross-references that make your LLMS.txt file more coherent.
+
+- **Dynamic Updates:** With Agent integration, your LLMS.txt can be automatically regenerated and optimized whenever content changes, ensuring AI systems always have access to your latest, most relevant information.
+
+- **Multi-Language Intelligence:** If you're running a global site, Agents can help create optimized LLMS.txt files for different languages, maintaining context and cultural nuances.
+
+The result? A living, breathing LLMS.txt file that doesn't just list your content-it presents it in the most AI-friendly way possible, improving how AI assistants understand and represent your brand.
+
+### How It Works
+**Step 1: Content Discovery**  
+The Marketplace app scans your Sitecore content tree and identifies all pages tagged for LLMS inclusion based on your Sitecore Template configuration.
+
+**Step 2: Intelligent Extraction**  
+For each tagged page, the app extracts the title and main content, respecting your content structure and hierarchy.
+
+**Step 3: LLMS.txt Generation**  
+All extracted content is compiled into a properly formatted LLMS.txt file following industry standards and best practices.
+
+**Step 4: Agent Optimization (Optional)**  
+When integrated with AI Agents, the generated content is analyzed and optimized for:
+- Clarity and conciseness
+- Proper structure and hierarchy
+- Keyword optimization
+- Context preservation
+- Readability for AI models
+
+**Step 5: Deployment**  
+The finalized LLMS.txt file is ready to be deployed to your website root, making your entire site instantly AI-accessible.
+
+![Architecture](docs/images/SitecoreAI-Marketplace-App-Architecture.png?raw=true "Architecture Logo")
+
+### Template and Page Details
+
+![Template and Page Details](docs/images/SitecoreAI-Template-Page-View.png?raw=true "Template and Page Details")
+
+### Dashboard Widget in Action
+
+The app appears as a dashboard widget in SitecoreAI, providing:
+- Current site context display
+- Dropdown to select from all available sites in your environment
+- One-click llms.txt generation
+- Copy to clipboard functionality
+- Direct upload to Sitecore Media Library
+
+![Marketplace App Dashboard](docs/images/marketplace-dashboard.png?raw=true "Dashboard Widget")
+
+![LLMS.txt Output](docs/images/llms-output.png?raw=true "Generated Output")
+
+## Video link
+[Video link => docs/PlaySummit-Video.mp4](docs/PlaySummit-Video.mp4)
+
+
+## Pre-requisites and Dependencies
+
+**Required:**
+
+1. SitecoreAI Access
+2. Marketplace app installed in your Sitecore Cloud Portal organization.
+3. Node.js 16 or later
+4. npm 10 or later
+5. Visual Studio Code
+
+**Optional (For AI Agent Integration):**
+
+6. Azure Subscription for Azure OpenAI (for Agent optimization features)
+
+
+**Sitecore Configuration:**
+
+- Configure Sitecore templates to include LLMS tagging fields
+- Ensure proper content author permissions for tagging pages
+
+
+## Installation instructions
+
+1. **Configure Templates:**
+   - Install the LLMS template (`docs\LLMS Template.zip`) for the LLMS tagging field
+   - Inherit the template into your Page Template
+ 
+2. **Register the Custom Marketplace App:**
+   - Follow the instructions at [Create a custom Marketplace app](https://doc.sitecore.com/mp/en/developers/marketplace/create-a-custom-marketplace-app.html)
+   - Configure the dashboard widget extension point
+   - Enable "SitecoreAI APIs" access
+   - Set deployment URL (use `http://localhost:5173` for local development)
+   - Install the app in your SitecoreAI environment
+
+### Configuration
+
+**AI Agent Integration (Optional):**
+- Add your Azure OpenAI API keys in the configuration
+- Set optimization preferences (summary length, keyword density, etc.)
+- Configure regeneration schedules
+
+## Usage instructions
+
+**Basic LLMS.txt Generation:**
+
+1. **Tag Your Content:**
+   - Open pages you want to include in LLMS.txt
+   - Check the "Is Displayed in LLMS.txt File" checkbox (or your configured field)
+   - Publish your changes
+
+2. **Generate LLMS.txt:**
+   - Open your SitecoreAI site dashboard
+   - Locate the LLMS Generator widget
+   - Select your site from the dropdown (or use the current site)
+   - Click "Generate LLMS.txt"
+   - Wait for the process to complete (typically a few seconds)
+
+3. **Review & Deploy:**
+   - Preview the generated LLMS.txt file in the widget
+   - Click "Copy to Clipboard" to copy the content
+   - Or click "Upload to Media Library" to upload directly to `/sitecore/media library/Project/{site-name}/llms.txt`
+   - Your site is now AI-ready!
+
+---
+
+## 🏗️ Technical Implementation
+
+### Architecture Overview
+
+This Marketplace app is built as a **Dashboard Widget** that appears in the SitecoreAI site dashboard.
+
+**Extension Point:** Dashboard Widget  
+**SDK Packages Used:**
+- `@sitecore-marketplace-sdk/client` (v0.3.2+) - Required for all Marketplace apps
+- `@sitecore-marketplace-sdk/xmc` (v0.4.1+) - For XM Cloud API access
+
+### APIs Utilized
+
 - **application.context** - Retrieves app details and Sitecore Context ID
 - **site.context** - Gets current site information (dashboard widget specific)
 - **xmc.xmapp.listSites** - Lists all sites in the SitecoreAI environment
 - **xmc.authoring.graphql** - Executes GraphQL mutations (uploadMedia) for file uploads
 
-## 📁 Project Structure
+### Project Structure
 
 ```
 src/headapps/llmsgenerator/
 ├── src/
-│   ├── App.tsx                           # Main dashboard widget component
-│   ├── App.css                           # Widget styling
-│   ├── main.tsx                          # React entry point
-│   ├── index.css                         # Global styles
+│   ├── App.tsx                     # Main dashboard widget component
+│   ├── App.css                     # Widget styling
+│   ├── main.tsx                    # React entry point
+│   ├── index.css                   # Global styles
 │   └── hooks/
-│       └── useMarketplaceClient.ts       # Marketplace SDK initialization hook with XMC
-├── public/                                # Static assets
-├── package.json                           # Dependencies and scripts
-├── tsconfig.json                          # TypeScript configuration
-└── vite.config.ts                         # Vite build configuration
+│       └── useMarketplaceClient.ts # Marketplace SDK initialization hook with XMC
+├── public/                         # Static assets
+├── package.json                    # Dependencies and scripts
+├── tsconfig.json                   # TypeScript configuration
+└── vite.config.ts                  # Vite build configuration
 ```
 
-## 🚀 Development
+### Development Setup
 
-### Prerequisites
-- Node.js 16+ 
+**Prerequisites:**
+- Node.js 16+
 - npm 10+
 - A Marketplace app registered and installed in Sitecore Cloud Portal
 - SitecoreAI environment access
 
-### Installation
-
-Dependencies are already installed. The app uses:
-```json
-{
-  "@sitecore-marketplace-sdk/client": "^0.3.2",
-  "@sitecore-marketplace-sdk/xmc": "^0.4.1",
-  "react": "19.2.4",
-  "react-dom": "19.2.4",
-  "typescript": "5.9.3",
-  "vite": "7.3.1"
-}
-```
-
-### Running the App
-
-Navigate to the app directory and start the development server:
+**Running Locally:**
 
 ```bash
 cd src/headapps/llmsgenerator
 npm run dev
 ```
 
-The app will be available at: http://localhost:5173
+The app will be available at: `http://localhost:5173`
 
-### Console Logging
+**Building for Production:**
 
-The app includes extensive console logging for debugging:
-- SDK initialization status
-- Application context retrieval
-- Site context retrieval  
-- Sites list fetching
-- Site selection
-- llms.txt generation
-- Media library upload status
+```bash
+npm run build
+```
 
-Open your browser's Developer Tools console to see these logs.
+Deploy the `dist` folder to a hosting provider (Azure Static Web Apps, Vercel, etc.)
 
-## 🔧 Configuration
+### Key Implementation Details
 
-### Marketplace App Setup
-
-1. **Register the app** in Sitecore Cloud Portal (App Studio)
-2. **Extension Point**: Enable "Dashboard Widget"
-3. **API Access**: Enable "SitecoreAI APIs"
-4. **Deployment URL**: Set to `http://localhost:5173` for local development
-5. **Route URL**: Use the default route (e.g., `/dashboard-widget`)
-6. **Install the app** in your SitecoreAI environment
-
-### Important Notes from Documentation
-
-- The app uses **built-in authorization** managed by the Marketplace SDK
-- Page information in SitecoreAI is stored in `pageContext.pageInfo` (not `pageContext.item`)
-- SitecoreAI API requests require the Sitecore Context ID from `application.context`
-- The SDK wraps API responses in a `data` property
-- Media library uploads use the GraphQL `uploadMedia` mutation via SDK's `xmc.authoring.graphql` operation
-
-## 🎨 Features
-
-### Dashboard Widget
-- Displays as a widget in the SitecoreAI site dashboard
-- Shows current site context
-- Lists all available sites in a dropdown
-- Generates llms.txt files with site information
-- Copy to clipboard functionality
-- Direct upload to Sitecore Media Library
-
-### llms.txt Generation
-The generated llms.txt file includes:
-- Site name and ID
-- Generation timestamp
-- Site structure information
-- Following the llms.txt standard for LLMs
-
-### Media Library Upload
-- Uses GraphQL `uploadMedia` mutation to get presigned upload URL
-- Uploads file to `/sitecore/media library/Project/rp-poc/{site-name}/llms.txt`
-- Two-step process: request presigned URL, then POST file
-- Note: May encounter CORS restrictions in local development; works when deployed to Sitecore
-
-## 📝 Implementation Details
-
-### XMC Package Initialization
-
-The `useMarketplaceClient` hook initializes the SDK with the XMC module:
+**XMC Package Initialization:**
 
 ```typescript
 const config = {
@@ -151,9 +215,7 @@ const config = {
 };
 ```
 
-### Site Querying
-
-The app queries sites using the SitecoreAI Sites REST API:
+**Site Querying:**
 
 ```typescript
 const response = await client.query("xmc.xmapp.listSites", {
@@ -165,9 +227,7 @@ const response = await client.query("xmc.xmapp.listSites", {
 });
 ```
 
-### Media Library Upload
-
-The app uploads files using the GraphQL uploadMedia mutation:
+**Media Library Upload:**
 
 ```typescript
 const uploadUrlResponse = await client.mutate("xmc.authoring.graphql", {
@@ -186,7 +246,7 @@ const uploadUrlResponse = await client.mutate("xmc.authoring.graphql", {
 });
 ```
 
-## 🔍 Debugging
+### Debugging Tips
 
 1. Open the app in SitecoreAI (not localhost)
 2. Open browser Developer Tools > Console
@@ -194,28 +254,25 @@ const uploadUrlResponse = await client.mutate("xmc.authoring.graphql", {
 4. Network tab will show API requests to SitecoreAI
 5. For upload issues, check for CORS errors (expected in local dev)
 
-## 📚 Additional Resources
+### Important Notes
+
+- The app must be opened within SitecoreAI (not localhost) to access Sitecore APIs
+- Built-in authorization is managed by the Marketplace SDK
+- Page information in SitecoreAI is stored in `pageContext.pageInfo` (not `pageContext.item`)
+- Media library upload works when deployed; may encounter CORS restrictions in local development
+- For local testing, use the "Copy to Clipboard" feature instead of upload
+
+### Additional Resources
 
 - [Sitecore Marketplace Documentation](https://doc.sitecore.com/mp/en/developers/marketplace)
 - [Marketplace SDK for JavaScript](https://doc.sitecore.com/mp/en/developers/sdk/latest/sitecore-marketplace-sdk)
 - [SitecoreAI APIs](https://api-docs.sitecore.com/xmc)
 - [SitecoreAI GraphQL API](https://doc.sitecore.com/xmc/en/developers/xm-cloud/sitecore-authoring-and-management-graphql-api.html)
 
-## 🎯 Next Steps
+---
 
-1. Build the app: `cd src/headapps/llmsgenerator && npm run build`
-2. Deploy the `dist` folder to a hosting provider (Azure Static Web Apps, Vercel, etc.)
-3. Register the app in Cloud Portal with your deployed URL
-4. Configure the dashboard widget extension point
-5. Install the app in your SitecoreAI environment
-6. Open the dashboard of any SitecoreAI site
-7. Find your widget and test the llms.txt generation
-8. Try both "Copy to Clipboard" and "Upload to Media Library" features
+## Comments
 
-## ⚠️ Important
+This Marketplace app bridges the gap between traditional CMS content management and the AI-first future. By making it easy to generate and maintain LLMS.txt files, we're ensuring that Sitecore websites are ready for the next generation of AI-powered search and discovery.
 
-- The app must be opened within SitecoreAI (not localhost) to access Sitecore APIs
-- Ensure your app has API access configured for "SitecoreAI APIs"
-- The Sitecore Context ID is retrieved from the application context automatically
-- Media library upload works when deployed; may encounter CORS restrictions in local development
-- For local testing, use the "Copy to Clipboard" feature instead of upload
+The Agent integration feature represents the cutting edge of content optimization-combining human creativity with AI intelligence to create the best possible representation of your content for AI systems.
