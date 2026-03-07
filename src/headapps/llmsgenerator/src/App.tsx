@@ -268,24 +268,24 @@ export default function App() {
       const selectedSite = sites.find(s => s.id === selectedSiteId);
       console.log("Creating LLMs.txt for site:", selectedSite);
 
-      // Fetch pages marked for LLM indexing
-      setMessage("⏳ Fetching pages marked for LLM indexing...");
+      // Fetch pages marked for LLMs indexing
+      setMessage("⏳ Fetching pages marked for LLMs indexing...");
       const llmPages = await fetchLLMPages(selectedSiteId);
-      console.log(`Found ${llmPages.length} pages marked for LLM indexing:`, llmPages);
+      console.log(`Found ${llmPages.length} pages marked for LLMs indexing:`, llmPages);
 
-      // Generate llms.txt content with pages
-      setMessage("⏳ Generating llms.txt content...");
+      // Generate LLMs.txt content with pages
+      setMessage("⏳ Generating LLMs.txt content...");
       const llmsTxtContent = generateLlmsTxtContent(selectedSite, llmPages);
-      console.log("Generated llms.txt content:", llmsTxtContent);
+      console.log("Generated LLMs.txt content:", llmsTxtContent);
 
       // Store the generated content to display in the widget
       setGeneratedContent(llmsTxtContent);
 
       const pagesInfo = llmPages.length > 0 
         ? ` (including ${llmPages.length} page${llmPages.length !== 1 ? 's' : ''})`
-        : ' (no pages marked for LLM indexing)';
-      setMessage(`✅ Content generated for ${selectedSite?.name}${pagesInfo}! Use the copy button below.`);
-      console.log("✅ llms.txt content generated and displayed");
+        : ' (no pages marked for LLMs indexing)';
+      setMessage(`✅ Your LLMs.txt for ${selectedSite?.name}${pagesInfo} is ready!`);
+      console.log("✅ LLMs.txt content generated and displayed");
     } catch (error) {
       console.error("Error creating LLMs.txt:", error);
       setMessage(`❌ Error creating LLMs.txt: ${error}`);
@@ -325,7 +325,7 @@ export default function App() {
     }
 
     if (!generatedContent) {
-      setMessage("❌ No content to upload. Please generate llms.txt first.");
+      setMessage("❌ No content to upload. Please generate LLMs.txt first.");
       return;
     }
 
@@ -386,7 +386,7 @@ export default function App() {
       
       // Create FormData and append the file (using empty key as per Sitecore docs)
       const formData = new FormData();
-      formData.append('', blob, 'llms.txt');
+      formData.append('', blob, 'LLMs.txt');
 
       // POST the file to the pre-signed URL with SDK-provided context ID for authorization
       const uploadResponse = await fetch(presignedUrl, {
@@ -435,7 +435,7 @@ export default function App() {
       });
     }
 
-    return `# llms.txt for ${site.name}
+    return `# LLMs.txt for ${site.name}
 
 # Site Information
 Site Name: ${site.name}
@@ -446,7 +446,7 @@ Generated: ${new Date().toISOString()}
 This file provides information about ${site.name} for Large Language Models (LLMs).
 
 # Purpose
-This llms.txt file follows the llms.txt standard to help LLMs understand the structure
+This LLMs.txt file follows the LLMs.txt standard to help LLMs understand the structure
 and content of this Sitecore XM Cloud site.
 
 # Site Structure
@@ -478,19 +478,8 @@ For more details about this site, please refer to the Sitecore XM Cloud document
 
   return (
     <div className="app">
-      <div className="sites-list">
-        <h3>Available Sites ({sites.filter(site => site.id && site.name).length})</h3>
-        <ul>
-          {sites.filter(site => site.id && site.name).map((site) => (
-            <li key={site.id!}>
-              {site.name} <span className="site-id">({site.id})</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
       <div className="widget-content">
-        <h2>Select a site to get started</h2>        
+        <h2 class="chakra-heading css-5zcyhm"> We have {sites.filter(site => site.id && site.name).length} site(s) available</h2>        
         <div className="form-group">          
           <select
             id="site-select"
