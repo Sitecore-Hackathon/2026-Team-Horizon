@@ -359,7 +359,7 @@ For more details about this site, please refer to the Sitecore XM Cloud document
                 </button>
                 <button 
                   onClick={handleUploadToMediaLibrary} 
-                  className="copy-button"
+                  className="upload-button"
                   title="Upload LLMs.txt to your Media Library"
                 >
                   ☁️ Upload to Media Library
