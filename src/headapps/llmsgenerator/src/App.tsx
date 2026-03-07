@@ -6,6 +6,16 @@ import "./App.css";
 interface Site {
   id: string | null | undefined;
   name: string | null | undefined;
+  hosts?: Array<{
+    id?: string;
+    name?: string;
+    targetHostname?: string;
+    hostnames?: string[];
+    properties?: {
+      rootPath?: string;
+      startItem?: string;
+    };
+  }>;
 }
 
 interface SiteContext {
@@ -13,6 +23,13 @@ interface SiteContext {
     id?: string;
     name?: string;
   };
+}
+
+interface LLMPage {
+  id: string;
+  name: string;
+  path: string;
+  url: string;
 }
 
 export default function App() {
@@ -90,11 +107,151 @@ export default function App() {
       console.log("Sites API response:", response);
       
       if (response.data?.data) {
+        // Debug: Log the first site to see its structure
+        console.log("First site structure:", JSON.stringify(response.data.data[0], null, 2));
         setSites(response.data.data as Site[]);
         console.log("Sites loaded:", response.data.data);
       }
     } catch (error) {
       console.error("Error listing sites:", error);
+    }
+  };
+
+  const fetchLLMPages = async (siteId: string): Promise<LLMPage[]> => {
+    if (!client || !appContext) {
+      console.error("Client or appContext not available");
+      return [];
+    }
+
+    try {
+      // Get the sitecoreContextId from the app context
+      const sitecoreContextId = appContext.resourceAccess?.[0]?.context?.preview || "";
+      
+      if (!sitecoreContextId) {
+        console.error("sitecoreContextId not found in appContext");
+        return [];
+      }
+
+      // GraphQL query to search using sitecore_master_index
+      // Search for items with "isLLMPage" field set to "1"
+      const graphqlQuery = `
+        query GetLLMPages {
+          search(
+            query: {
+              index: "sitecore_master_index"
+              searchStatement: {
+                criteria: [
+                  {
+                    operator: MUST
+                    field: "isllmpage_b"
+                    value: "1"
+                  }
+                ]
+              }
+            }
+          ) {
+            results {
+              innerItem {
+                itemId
+                name
+                path
+                url
+              }
+            }
+          }
+        }
+      `;
+
+      const response = await client.mutate("xmc.authoring.graphql", {
+        params: {
+          query: {
+            sitecoreContextId,
+          },
+          body: {
+            query: graphqlQuery
+          }
+        }
+      });
+
+      console.log("LLM Pages GraphQL response:", response);
+
+      // Parse the response from search query  - results contain innerItem
+      const searchResults = (response.data as any)?.data?.search?.results || [];
+      
+      // Extract the innerItem from each result
+      const llmPages = searchResults.map((result: any) => result.innerItem).filter((item: any) => item);
+      
+      console.log(`Found ${llmPages.length} pages with LLM checkbox enabled:`, llmPages);
+      
+      // Get the selected site to construct URLs
+      const selectedSite = sites.find(s => s.id === siteId);
+      const siteName = selectedSite?.name || '';
+      
+      // Debug: Log the selected site object
+      console.log("Selected site for URL construction:", selectedSite);
+      console.log("Selected site hosts:", selectedSite?.hosts);
+      
+      // Get target hostname from site hosts
+      let targetHostname = selectedSite?.hosts?.[0]?.targetHostname;
+      
+      // Remove protocol if present (to add it back consistently)
+      if (targetHostname) {
+        targetHostname = targetHostname.replace(/^https?:\/\//, '');
+      }
+      
+      console.log("Target hostname:", targetHostname);
+      
+      // Get the root path and start item from hosts[0].properties
+      const rootPath = selectedSite?.hosts?.[0]?.properties?.rootPath || `/sitecore/content/${siteName}`;
+      const startItem = selectedSite?.hosts?.[0]?.properties?.startItem || '';
+      console.log("Root path to strip:", rootPath);
+      console.log("Start item:", startItem);
+      
+      return llmPages.map((item: any) => {
+        // Always construct URL from path using targetHostname
+        let url = '';
+        
+        if (item.path) {
+          console.log("Processing path:", item.path);
+          
+          // Remove the root path prefix (e.g., /sitecore/content/rp-poc/sug-demo)
+          let relativePath = item.path;
+          if (relativePath.toLowerCase().startsWith(rootPath.toLowerCase())) {
+            relativePath = relativePath.substring(rootPath.length);
+            console.log("  After stripping rootPath:", relativePath);
+          }
+          
+          // Remove start item prefix (e.g., /Home) if present
+          if (startItem && relativePath.toLowerCase().startsWith(startItem.toLowerCase())) {
+            console.log("  Stripping startItem:", startItem);
+            relativePath = relativePath.substring(startItem.length);
+            console.log("  After stripping startItem:", relativePath);
+          }
+          
+          // Remove leading slash
+          relativePath = relativePath.replace(/^\//, '');
+          console.log("  Final relativePath:", relativePath);
+          
+          // Construct full URL with target hostname if available
+          if (targetHostname) {
+            // Don't add trailing slash if relativePath is empty (for home page)
+            url = relativePath ? `https://${targetHostname}/${relativePath}` : `https://${targetHostname}`;
+          } else {
+            url = relativePath ? '/' + relativePath : '/';
+          }
+          console.log("  Final URL:", url);
+        }
+        
+        return {
+          id: item.itemId || "",
+          name: item.name || "",
+          path: item.path || "",
+          url: url || item.path || ""
+        };
+      });
+    } catch (error) {
+      console.error("Error fetching LLM pages:", error);
+      return [];
     }
   };
 
@@ -111,15 +268,24 @@ export default function App() {
       const selectedSite = sites.find(s => s.id === selectedSiteId);
       console.log("Creating LLMs.txt for site:", selectedSite);
 
-      // Generate LLMs.txt content
-      const llmsTxtContent = generateLlmsTxtContent(selectedSite);
-      console.log("Generated LLMs.txt content:", llmsTxtContent);
+      // Fetch pages marked for LLM indexing
+      setMessage("⏳ Fetching pages marked for LLM indexing...");
+      const llmPages = await fetchLLMPages(selectedSiteId);
+      console.log(`Found ${llmPages.length} pages marked for LLM indexing:`, llmPages);
+
+      // Generate llms.txt content with pages
+      setMessage("⏳ Generating llms.txt content...");
+      const llmsTxtContent = generateLlmsTxtContent(selectedSite, llmPages);
+      console.log("Generated llms.txt content:", llmsTxtContent);
 
       // Store the generated content to display in the widget
       setGeneratedContent(llmsTxtContent);
 
-      setMessage(`✅ Your LLMs.txt for ${selectedSite?.name} is ready!`);
-      console.log("✅ LLMs.txt content generated and displayed");
+      const pagesInfo = llmPages.length > 0 
+        ? ` (including ${llmPages.length} page${llmPages.length !== 1 ? 's' : ''})`
+        : ' (no pages marked for LLM indexing)';
+      setMessage(`✅ Content generated for ${selectedSite?.name}${pagesInfo}! Use the copy button below.`);
+      console.log("✅ llms.txt content generated and displayed");
     } catch (error) {
       console.error("Error creating LLMs.txt:", error);
       setMessage(`❌ Error creating LLMs.txt: ${error}`);
@@ -257,8 +423,17 @@ export default function App() {
     }
   };
 
-  const generateLlmsTxtContent = (site: Site | undefined): string => {
+  const generateLlmsTxtContent = (site: Site | undefined, pages: LLMPage[] = []): string => {
     if (!site || !site.name) return "";
+
+    // Build pages section if pages are available
+    let pagesSection = "";
+    if (pages.length > 0) {
+      pagesSection = `\n# Pages\nThe following pages are marked for LLM indexing:\n\n`;
+      pages.forEach(page => {
+        pagesSection += `- ${page.name}: ${page.url || 'N/A'}\n`;
+      });
+    }
 
     return `# llms.txt for ${site.name}
 
@@ -278,7 +453,7 @@ and content of this Sitecore XM Cloud site.
 - Site ID: ${site.id || 'N/A'}
 - Site Name: ${site.name}
 - Generated from Sitecore XM Cloud Dashboard Widget
-
+${pagesSection}
 # Additional Information
 For more details about this site, please refer to the Sitecore XM Cloud documentation.
 `;
