@@ -6,6 +6,16 @@ import "./App.css";
 interface Site {
   id: string | null | undefined;
   name: string | null | undefined;
+  hosts?: Array<{
+    id?: string;
+    name?: string;
+    targetHostname?: string;
+    hostnames?: string[];
+    properties?: {
+      rootPath?: string;
+      startItem?: string;
+    };
+  }>;
 }
 
 interface SiteContext {
@@ -13,6 +23,13 @@ interface SiteContext {
     id?: string;
     name?: string;
   };
+}
+
+interface LLMPage {
+  id: string;
+  name: string;
+  path: string;
+  url: string;
 }
 
 export default function App() {
@@ -90,11 +107,171 @@ export default function App() {
       console.log("Sites API response:", response);
       
       if (response.data?.data) {
+        // Debug: Log the first site to see its structure
+        console.log("First site structure:", JSON.stringify(response.data.data[0], null, 2));
         setSites(response.data.data as Site[]);
         console.log("Sites loaded:", response.data.data);
       }
     } catch (error) {
       console.error("Error listing sites:", error);
+    }
+  };
+
+  const fetchLLMPages = async (siteId: string): Promise<LLMPage[]> => {
+    if (!client || !appContext) {
+      console.error("Client or appContext not available");
+      return [];
+    }
+
+    try {
+      // Get the sitecoreContextId from the app context
+      const sitecoreContextId = appContext.resourceAccess?.[0]?.context?.preview || "";
+      
+      if (!sitecoreContextId) {
+        console.error("sitecoreContextId not found in appContext");
+        return [];
+      }
+
+      // Get the selected site to get the root path
+      const selectedSite = sites.find(s => s.id === siteId);
+      const rootPath = selectedSite?.hosts?.[0]?.properties?.rootPath || '';
+      
+      if (!rootPath) {
+        console.error("Root path not found for selected site");
+        return [];
+      }
+
+      console.log("Filtering pages by root path:", rootPath);
+
+      // GraphQL query to search using sitecore_master_index
+      // Search for items with "isLLMPage" field set to "1"
+      // We'll filter by path after getting results since path matching in search can be tricky
+      const graphqlQuery = `
+        query GetLLMPages {
+          search(
+            query: {
+              index: "sitecore_master_index"
+              searchStatement: {
+                criteria: [
+                  {
+                    operator: MUST
+                    field: "isllmpage_b"
+                    value: "1"
+                  }
+                ]
+              }
+            }
+          ) {
+            results {
+              innerItem {
+                itemId
+                name
+                path
+                url
+              }
+            }
+          }
+        }
+      `;
+
+      const response = await client.mutate("xmc.authoring.graphql", {
+        params: {
+          query: {
+            sitecoreContextId,
+          },
+          body: {
+            query: graphqlQuery
+          }
+        }
+      });
+
+      console.log("LLM Pages GraphQL response:", response);
+
+      // Parse the response from search query  - results contain innerItem
+      const searchResults = (response.data as any)?.data?.search?.results || [];
+      
+      // Extract the innerItem from each result
+      const allLlmPages = searchResults.map((result: any) => result.innerItem).filter((item: any) => item);
+      
+      console.log(`Found ${allLlmPages.length} total pages with LLM checkbox enabled:`, allLlmPages);
+      
+      // Filter by root path to only get pages from the selected site
+      const llmPages = allLlmPages.filter((item: any) => {
+        const itemPath = (item.path || '').toLowerCase();
+        const siteRoot = rootPath.toLowerCase();
+        const isInSite = itemPath.startsWith(siteRoot);
+        if (isInSite) {
+          console.log(`  ✓ Including: ${item.path}`);
+        }
+        return isInSite;
+      });
+      
+      console.log(`Filtered to ${llmPages.length} pages for site with root path ${rootPath}`);
+      
+      // Debug: Log the selected site object
+      console.log("Selected site for URL construction:", selectedSite);
+      console.log("Selected site hosts:", selectedSite?.hosts);
+      
+      // Get target hostname from site hosts
+      let targetHostname = selectedSite?.hosts?.[0]?.targetHostname;
+      
+      // Remove protocol if present (to add it back consistently)
+      if (targetHostname) {
+        targetHostname = targetHostname.replace(/^https?:\/\//, '');
+      }
+      
+      console.log("Target hostname:", targetHostname);
+      
+      // Get the start item from hosts[0].properties (rootPath already obtained above)
+      const startItem = selectedSite?.hosts?.[0]?.properties?.startItem || '';
+      console.log("Root path to strip:", rootPath);
+      console.log("Start item:", startItem);
+      
+      return llmPages.map((item: any) => {
+        // Always construct URL from path using targetHostname
+        let url = '';
+        
+        if (item.path) {
+          console.log("Processing path:", item.path);
+          
+          // Remove the root path prefix (e.g., /sitecore/content/rp-poc/sug-demo)
+          let relativePath = item.path;
+          if (relativePath.toLowerCase().startsWith(rootPath.toLowerCase())) {
+            relativePath = relativePath.substring(rootPath.length);
+            console.log("  After stripping rootPath:", relativePath);
+          }
+          
+          // Remove start item prefix (e.g., /Home) if present
+          if (startItem && relativePath.toLowerCase().startsWith(startItem.toLowerCase())) {
+            console.log("  Stripping startItem:", startItem);
+            relativePath = relativePath.substring(startItem.length);
+            console.log("  After stripping startItem:", relativePath);
+          }
+          
+          // Remove leading slash
+          relativePath = relativePath.replace(/^\//, '');
+          console.log("  Final relativePath:", relativePath);
+          
+          // Construct full URL with target hostname if available
+          if (targetHostname) {
+            // Don't add trailing slash if relativePath is empty (for home page)
+            url = relativePath ? `https://${targetHostname}/${relativePath}` : `https://${targetHostname}`;
+          } else {
+            url = relativePath ? '/' + relativePath : '/';
+          }
+          console.log("  Final URL:", url);
+        }
+        
+        return {
+          id: item.itemId || "",
+          name: item.name || "",
+          path: item.path || "",
+          url: url || item.path || ""
+        };
+      });
+    } catch (error) {
+      console.error("Error fetching LLM pages:", error);
+      return [];
     }
   };
 
@@ -111,14 +288,23 @@ export default function App() {
       const selectedSite = sites.find(s => s.id === selectedSiteId);
       console.log("Creating LLMs.txt for site:", selectedSite);
 
-      // Generate LLMs.txt content
-      const llmsTxtContent = generateLlmsTxtContent(selectedSite);
+      // Fetch pages marked for LLMs indexing
+      setMessage("⏳ Fetching pages marked for LLMs indexing...");
+      const llmPages = await fetchLLMPages(selectedSiteId);
+      console.log(`Found ${llmPages.length} pages marked for LLMs indexing:`, llmPages);
+
+      // Generate LLMs.txt content with pages
+      setMessage("⏳ Generating LLMs.txt content...");
+      const llmsTxtContent = generateLlmsTxtContent(selectedSite, llmPages);
       console.log("Generated LLMs.txt content:", llmsTxtContent);
 
       // Store the generated content to display in the widget
       setGeneratedContent(llmsTxtContent);
 
-      setMessage(`✅ Your LLMs.txt for ${selectedSite?.name} is ready!`);
+      const pagesInfo = llmPages.length > 0 
+        ? ` (including ${llmPages.length} page${llmPages.length !== 1 ? 's' : ''})`
+        : ' (no pages marked for LLMs indexing)';
+      setMessage(`✅ Your LLMs.txt for ${selectedSite?.name}${pagesInfo} is ready!`);
       console.log("✅ LLMs.txt content generated and displayed");
     } catch (error) {
       console.error("Error creating LLMs.txt:", error);
@@ -159,7 +345,7 @@ export default function App() {
     }
 
     if (!generatedContent) {
-      setMessage("❌ No content to upload. Please generate llms.txt first.");
+      setMessage("❌ No content to upload. Please generate LLMs.txt first.");
       return;
     }
 
@@ -220,7 +406,7 @@ export default function App() {
       
       // Create FormData and append the file (using empty key as per Sitecore docs)
       const formData = new FormData();
-      formData.append('', blob, 'llms.txt');
+      formData.append('', blob, 'LLMs.txt');
 
       // POST the file to the pre-signed URL with SDK-provided context ID for authorization
       const uploadResponse = await fetch(presignedUrl, {
@@ -257,10 +443,19 @@ export default function App() {
     }
   };
 
-  const generateLlmsTxtContent = (site: Site | undefined): string => {
+  const generateLlmsTxtContent = (site: Site | undefined, pages: LLMPage[] = []): string => {
     if (!site || !site.name) return "";
 
-    return `# llms.txt for ${site.name}
+    // Build pages section if pages are available
+    let pagesSection = "";
+    if (pages.length > 0) {
+      pagesSection = `\n# Pages\nThe following pages are marked for LLM indexing:\n\n`;
+      pages.forEach(page => {
+        pagesSection += `- ${page.name}: ${page.url || 'N/A'}\n`;
+      });
+    }
+
+    return `# LLMs.txt for ${site.name}
 
 # Site Information
 Site Name: ${site.name}
@@ -271,14 +466,14 @@ Generated: ${new Date().toISOString()}
 This file provides information about ${site.name} for Large Language Models (LLMs).
 
 # Purpose
-This llms.txt file follows the llms.txt standard to help LLMs understand the structure
+This LLMs.txt file follows the LLMs.txt standard to help LLMs understand the structure
 and content of this Sitecore XM Cloud site.
 
 # Site Structure
 - Site ID: ${site.id || 'N/A'}
 - Site Name: ${site.name}
 - Generated from Sitecore XM Cloud Dashboard Widget
-
+${pagesSection}
 # Additional Information
 For more details about this site, please refer to the Sitecore XM Cloud documentation.
 `;
@@ -303,19 +498,8 @@ For more details about this site, please refer to the Sitecore XM Cloud document
 
   return (
     <div className="app">
-      <div className="sites-list">
-        <h3>Available Sites ({sites.filter(site => site.id && site.name).length})</h3>
-        <ul>
-          {sites.filter(site => site.id && site.name).map((site) => (
-            <li key={site.id!}>
-              {site.name} <span className="site-id">({site.id})</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
       <div className="widget-content">
-        <h2>Select a site to get started</h2>        
+        <h2 class="chakra-heading css-5zcyhm"> We have {sites.filter(site => site.id && site.name).length} site(s) available</h2>        
         <div className="form-group">          
           <select
             id="site-select"
