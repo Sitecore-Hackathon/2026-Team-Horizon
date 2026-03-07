@@ -467,15 +467,15 @@ This file provides information about ${site.name} for Large Language Models (LLM
 
 # Purpose
 This LLMs.txt file follows the LLMs.txt standard to help LLMs understand the structure
-and content of this Sitecore XM Cloud site.
+and content of this SitecoreAI site.
 
 # Site Structure
 - Site ID: ${site.id || 'N/A'}
 - Site Name: ${site.name}
-- Generated from Sitecore XM Cloud Dashboard Widget
+- Generated from SitecoreAI Dashboard Widget
 ${pagesSection}
 # Additional Information
-For more details about this site, please refer to the Sitecore XM Cloud documentation.
+For more details about this site, please refer to the SitecoreAI documentation.
 `;
   };
 
