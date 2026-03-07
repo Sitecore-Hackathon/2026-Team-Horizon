@@ -15,6 +15,13 @@ interface SiteContext {
   };
 }
 
+interface LLMPage {
+  id: string;
+  name: string;
+  path: string;
+  url: string;
+}
+
 export default function App() {
   const { client, error, isInitialized } = useMarketplaceClient();
   const [appContext, setAppContext] = useState<ApplicationContext>();
@@ -98,6 +105,83 @@ export default function App() {
     }
   };
 
+  const fetchLLMPages = async (siteId: string): Promise<LLMPage[]> => {
+    if (!client || !appContext) {
+      console.error("Client or appContext not available");
+      return [];
+    }
+
+    try {
+      // Get the sitecoreContextId from the app context
+      const sitecoreContextId = appContext.resourceAccess?.[0]?.context?.preview || "";
+      
+      if (!sitecoreContextId) {
+        console.error("sitecoreContextId not found in appContext");
+        return [];
+      }
+
+      // GraphQL query to search using sitecore_master_index
+      // Search for items with "isLLMPage" field set to "1"
+      const graphqlQuery = `
+        query GetLLMPages {
+          search(
+            query: {
+              index: "sitecore_master_index"
+              searchStatement: {
+                criteria: [
+                  {
+                    operator: MUST
+                    field: "isllmpage_b"
+                    value: "1"
+                  }
+                ]
+              }
+            }
+          ) {
+            results {
+              innerItem {
+                itemId
+                name
+                path
+              }
+            }
+          }
+        }
+      `;
+
+      const response = await client.mutate("xmc.authoring.graphql", {
+        params: {
+          query: {
+            sitecoreContextId,
+          },
+          body: {
+            query: graphqlQuery
+          }
+        }
+      });
+
+      console.log("LLM Pages GraphQL response:", response);
+
+      // Parse the response from search query  - results contain innerItem
+      const searchResults = (response.data as any)?.data?.search?.results || [];
+      
+      // Extract the innerItem from each result
+      const llmPages = searchResults.map((result: any) => result.innerItem).filter((item: any) => item);
+      
+      console.log(`Found ${llmPages.length} pages with LLM checkbox enabled:`, llmPages);
+      
+      return llmPages.map((item: any) => ({
+        id: item.itemId || "",
+        name: item.name || "",
+        path: item.path || "",
+        url: item.url || item.path || ""
+      }));
+    } catch (error) {
+      console.error("Error fetching LLM pages:", error);
+      return [];
+    }
+  };
+
   const handleCreateLlmsTxt = async () => {
     if (!selectedSiteId) {
       setMessage("Please select a site first");
@@ -111,14 +195,23 @@ export default function App() {
       const selectedSite = sites.find(s => s.id === selectedSiteId);
       console.log("Creating llms.txt for site:", selectedSite);
 
-      // Generate llms.txt content
-      const llmsTxtContent = generateLlmsTxtContent(selectedSite);
+      // Fetch pages marked for LLM indexing
+      setMessage("⏳ Fetching pages marked for LLM indexing...");
+      const llmPages = await fetchLLMPages(selectedSiteId);
+      console.log(`Found ${llmPages.length} pages marked for LLM indexing:`, llmPages);
+
+      // Generate llms.txt content with pages
+      setMessage("⏳ Generating llms.txt content...");
+      const llmsTxtContent = generateLlmsTxtContent(selectedSite, llmPages);
       console.log("Generated llms.txt content:", llmsTxtContent);
 
       // Store the generated content to display in the widget
       setGeneratedContent(llmsTxtContent);
 
-      setMessage(`✅ Content generated for ${selectedSite?.name}! Use the copy button below.`);
+      const pagesInfo = llmPages.length > 0 
+        ? ` (including ${llmPages.length} page${llmPages.length !== 1 ? 's' : ''})`
+        : ' (no pages marked for LLM indexing)';
+      setMessage(`✅ Content generated for ${selectedSite?.name}${pagesInfo}! Use the copy button below.`);
       console.log("✅ llms.txt content generated and displayed");
     } catch (error) {
       console.error("Error creating llms.txt:", error);
@@ -257,8 +350,17 @@ export default function App() {
     }
   };
 
-  const generateLlmsTxtContent = (site: Site | undefined): string => {
+  const generateLlmsTxtContent = (site: Site | undefined, pages: LLMPage[] = []): string => {
     if (!site || !site.name) return "";
+
+    // Build pages section if pages are available
+    let pagesSection = "";
+    if (pages.length > 0) {
+      pagesSection = `\n# Pages\nThe following pages are marked for LLM indexing:\n\n`;
+      pages.forEach(page => {
+        pagesSection += `- ${page.name}: ${page.url || 'N/A'}\n`;
+      });
+    }
 
     return `# llms.txt for ${site.name}
 
@@ -278,7 +380,7 @@ and content of this Sitecore XM Cloud site.
 - Site ID: ${site.id || 'N/A'}
 - Site Name: ${site.name}
 - Generated from Sitecore XM Cloud Dashboard Widget
-
+${pagesSection}
 # Additional Information
 For more details about this site, please refer to the Sitecore XM Cloud documentation.
 `;
