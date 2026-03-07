@@ -266,7 +266,7 @@ export default function App() {
 
     try {
       const selectedSite = sites.find(s => s.id === selectedSiteId);
-      console.log("Creating llms.txt for site:", selectedSite);
+      console.log("Creating LLMs.txt for site:", selectedSite);
 
       // Fetch pages marked for LLM indexing
       setMessage("⏳ Fetching pages marked for LLM indexing...");
@@ -287,8 +287,8 @@ export default function App() {
       setMessage(`✅ Content generated for ${selectedSite?.name}${pagesInfo}! Use the copy button below.`);
       console.log("✅ llms.txt content generated and displayed");
     } catch (error) {
-      console.error("Error creating llms.txt:", error);
-      setMessage(`❌ Error creating llms.txt: ${error}`);
+      console.error("Error creating LLMs.txt:", error);
+      setMessage(`❌ Error creating LLMs.txt: ${error}`);
     } finally {
       setIsCreatingFile(false);
     }
@@ -478,25 +478,20 @@ For more details about this site, please refer to the Sitecore XM Cloud document
 
   return (
     <div className="app">
-      <h1>🚀 XM Cloud llms.txt Generator</h1>
-      
-      {appContext && (
-        <div className="info-section">
-          <p><strong>App:</strong> {appContext.name}</p>
-        </div>
-      )}
-
-      {siteContext?.site && (
-        <div className="current-site">
-          <p><strong>Current Site:</strong> {siteContext.site.name}</p>
-        </div>
-      )}
+      <div className="sites-list">
+        <h3>Available Sites ({sites.filter(site => site.id && site.name).length})</h3>
+        <ul>
+          {sites.filter(site => site.id && site.name).map((site) => (
+            <li key={site.id!}>
+              {site.name} <span className="site-id">({site.id})</span>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       <div className="widget-content">
-        <h2>Select a Site</h2>
-        
-        <div className="form-group">
-          <label htmlFor="site-select">Choose a site to generate llms.txt:</label>
+        <h2>Select a site to get started</h2>        
+        <div className="form-group">          
           <select
             id="site-select"
             value={selectedSiteId}
@@ -520,13 +515,19 @@ For more details about this site, please refer to the Sitecore XM Cloud document
           disabled={!selectedSiteId || isCreatingFile}
           className="confirm-button"
         >
-          {isCreatingFile ? "Generating..." : "Generate llms.txt"}
+          {isCreatingFile ? "Generating..." : "Generate LLMs.txt"}
         </button>
 
         {generatedContent && (
           <div className="content-display">
-            <div className="content-header">
-              <h3>Generated llms.txt Content</h3>
+            
+                {message && (
+                  <div className={`message ${message.includes('✅') ? 'success' : 'error'}`}>
+                    {message}
+                  </div>
+                )}
+            
+            <div className="content-actions">
               <div className="button-group">
                 <button onClick={handleCopyContent} className="copy-button">
                   📋 Copy to Clipboard
@@ -534,7 +535,7 @@ For more details about this site, please refer to the Sitecore XM Cloud document
                 <button 
                   onClick={handleUploadToMediaLibrary} 
                   className="upload-button"
-                  title="Upload llms.txt to Sitecore Media Library"
+                  title="Upload LLMs.txt to your Media Library"
                 >
                   ☁️ Upload to Media Library
                 </button>
@@ -542,32 +543,19 @@ For more details about this site, please refer to the Sitecore XM Cloud document
               <p style={{ fontSize: '11px', color: '#666', marginTop: '8px', marginBottom: '0' }}>
                 💡 Upload may not work in local dev due to CORS. Works after deploying to Sitecore.
               </p>
+              
             </div>
-            <textarea
-              className="content-textarea"
-              value={generatedContent}
-              readOnly
-              rows={15}
-            />
+            <div className="content-info">
+                <textarea
+                  className="content-textarea"
+                  value={generatedContent}
+                  readOnly
+                  rows={15}
+                />
+            </div>
+
           </div>
         )}
-
-        {message && (
-          <div className={`message ${message.includes('✅') ? 'success' : 'error'}`}>
-            {message}
-          </div>
-        )}
-
-        <div className="sites-list">
-          <h3>Available Sites ({sites.filter(site => site.id && site.name).length})</h3>
-          <ul>
-            {sites.filter(site => site.id && site.name).map((site) => (
-              <li key={site.id!}>
-                {site.name} <span className="site-id">({site.id})</span>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
     </div>
   );
