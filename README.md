@@ -113,6 +113,14 @@ The app appears as a dashboard widget in SitecoreAI, providing:
    - Set deployment URL (use `http://localhost:5173` for local development)
    - Install the app in your SitecoreAI environment
 
+   Your LLM Generator will appear on `My apps` as shown below
+   
+   ![My apps](docs/images/SitecoreCloud-MyApps.png?raw=true "My apps")
+
+   Follow the link to launch the LLM Generator in `App studio` as shown below
+   
+   ![App studio](docs/images/SitecoreCloud-Appstudio.png?raw=true "App studio")
+
 ### Configuration
 
 **AI Agent Integration (Optional):**
