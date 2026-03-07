@@ -76,7 +76,10 @@ The app appears as a dashboard widget in SitecoreAI, providing:
 ![LLMS.txt Output](docs/images/llms-output.png?raw=true "Generated Output")
 
 ## Video link
-[Video link => docs/PlaySummit-Video.mp4](docs/PlaySummit-Video.mp4)
+
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=ENyBnhuoXlc" target="_blank">
+ <img src="https://img.youtube.com/vi/ENyBnhuoXlc/hqdefault.jpg" alt="Watch the video" width="240" height="180" border="10" />
+</a>
 
 
 ## Pre-requisites and Dependencies
