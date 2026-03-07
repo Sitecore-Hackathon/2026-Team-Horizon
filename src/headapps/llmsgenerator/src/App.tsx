@@ -6,6 +6,16 @@ import "./App.css";
 interface Site {
   id: string | null | undefined;
   name: string | null | undefined;
+  hosts?: Array<{
+    id?: string;
+    name?: string;
+    targetHostname?: string;
+    hostnames?: string[];
+    properties?: {
+      rootPath?: string;
+      startItem?: string;
+    };
+  }>;
 }
 
 interface SiteContext {
@@ -97,6 +107,8 @@ export default function App() {
       console.log("Sites API response:", response);
       
       if (response.data?.data) {
+        // Debug: Log the first site to see its structure
+        console.log("First site structure:", JSON.stringify(response.data.data[0], null, 2));
         setSites(response.data.data as Site[]);
         console.log("Sites loaded:", response.data.data);
       }
@@ -143,6 +155,7 @@ export default function App() {
                 itemId
                 name
                 path
+                url
               }
             }
           }
@@ -170,12 +183,72 @@ export default function App() {
       
       console.log(`Found ${llmPages.length} pages with LLM checkbox enabled:`, llmPages);
       
-      return llmPages.map((item: any) => ({
-        id: item.itemId || "",
-        name: item.name || "",
-        path: item.path || "",
-        url: item.url || item.path || ""
-      }));
+      // Get the selected site to construct URLs
+      const selectedSite = sites.find(s => s.id === siteId);
+      const siteName = selectedSite?.name || '';
+      
+      // Debug: Log the selected site object
+      console.log("Selected site for URL construction:", selectedSite);
+      console.log("Selected site hosts:", selectedSite?.hosts);
+      
+      // Get target hostname from site hosts
+      let targetHostname = selectedSite?.hosts?.[0]?.targetHostname;
+      
+      // Remove protocol if present (to add it back consistently)
+      if (targetHostname) {
+        targetHostname = targetHostname.replace(/^https?:\/\//, '');
+      }
+      
+      console.log("Target hostname:", targetHostname);
+      
+      // Get the root path and start item from hosts[0].properties
+      const rootPath = selectedSite?.hosts?.[0]?.properties?.rootPath || `/sitecore/content/${siteName}`;
+      const startItem = selectedSite?.hosts?.[0]?.properties?.startItem || '';
+      console.log("Root path to strip:", rootPath);
+      console.log("Start item:", startItem);
+      
+      return llmPages.map((item: any) => {
+        // Always construct URL from path using targetHostname
+        let url = '';
+        
+        if (item.path) {
+          console.log("Processing path:", item.path);
+          
+          // Remove the root path prefix (e.g., /sitecore/content/rp-poc/sug-demo)
+          let relativePath = item.path;
+          if (relativePath.toLowerCase().startsWith(rootPath.toLowerCase())) {
+            relativePath = relativePath.substring(rootPath.length);
+            console.log("  After stripping rootPath:", relativePath);
+          }
+          
+          // Remove start item prefix (e.g., /Home) if present
+          if (startItem && relativePath.toLowerCase().startsWith(startItem.toLowerCase())) {
+            console.log("  Stripping startItem:", startItem);
+            relativePath = relativePath.substring(startItem.length);
+            console.log("  After stripping startItem:", relativePath);
+          }
+          
+          // Remove leading slash
+          relativePath = relativePath.replace(/^\//, '');
+          console.log("  Final relativePath:", relativePath);
+          
+          // Construct full URL with target hostname if available
+          if (targetHostname) {
+            // Don't add trailing slash if relativePath is empty (for home page)
+            url = relativePath ? `https://${targetHostname}/${relativePath}` : `https://${targetHostname}`;
+          } else {
+            url = relativePath ? '/' + relativePath : '/';
+          }
+          console.log("  Final URL:", url);
+        }
+        
+        return {
+          id: item.itemId || "",
+          name: item.name || "",
+          path: item.path || "",
+          url: url || item.path || ""
+        };
+      });
     } catch (error) {
       console.error("Error fetching LLM pages:", error);
       return [];
