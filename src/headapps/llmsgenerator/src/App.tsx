@@ -222,14 +222,11 @@ export default function App() {
       const formData = new FormData();
       formData.append('', blob, 'llms.txt');
 
-      // Get API key or context ID for authorization
-      const apiKey = import.meta.env.VITE_SITECORE_API_KEY || sitecoreContextId;
-
-      // POST the file to the pre-signed URL with Authorization header
+      // POST the file to the pre-signed URL with SDK-provided context ID for authorization
       const uploadResponse = await fetch(presignedUrl, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`
+          'Authorization': `Bearer ${sitecoreContextId}`
         },
         body: formData,
         mode: 'cors' // Explicitly set CORS mode
